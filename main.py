@@ -5,6 +5,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 
+from flask import Flask, jsonify
+
 
 def get_token():
     url = "https://chrt.remmody.ru/v2/api/token"
@@ -16,10 +18,10 @@ def get_token():
     data = response.json()
     jwtToken = data.get("token")
 
-    return(jwtToken)
+    return jwtToken
 
 
-def get_data(token):
+def get_data_encrypted(token):
     url = "https://chrt.remmody.ru/v2/api"
     headers = {"Authorization": "Bearer " + token}
 
@@ -49,15 +51,14 @@ def decrypt_data(encrypted_data):
         print("Ошибка при дешифровании данных:", e)
         raise e
 
+app = Flask(__name__)
 
-# print(decrypt_data(data))
-
-
-def main():
+@app.route('/', methods=['GET'])
+def get_data():
     token = get_token()
-    encrypted_data = get_data(token)
+    encrypted_data = get_data_encrypted(token)
     data = decrypt_data(encrypted_data)
-    print(data)
+    return data
 
 if __name__ == "__main__":
-    main()
+    app.run()
